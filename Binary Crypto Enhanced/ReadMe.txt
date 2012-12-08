@@ -13,6 +13,12 @@ A series of assembly xor's and circular bit shifts are performed on 32bit (4byte
 Features include: Checksum stored in the encrypted data for checking integrity of decrypted data. File paths are checked and will reprompt if unaccessible.
 				  Calculates how fast data is processed being encrypted or decrypted. A large key file will create significant overhead. 
 					This is the speed at which it took to load the data, key, run the encryption/decryption function, and write out to file the result.
+                    
+INSTALLATION NOTES:
+To install on Linux, run "make" in the linux/ directory. It will build a cryptoUtil binary file to execute.
+To install on Mac, run "make" in the macosx/ directory. It will build a cryptoUtil binary file to execute.
+To install on Windows, just use the crypto.exe executable. If you really want, and have g++.exe & nasm.exe in your system path, you can use make.bat and it will compile you a new executable with the included source files.
+
 
 
 Written by William Showalter. williamshowalter@gmail.com.
