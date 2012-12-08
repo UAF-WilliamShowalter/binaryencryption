@@ -1,6 +1,6 @@
 section .text
-global _encryptionAlgorithm
-_encryptionAlgorithm:
+global encryptionAlgorithm
+encryptionAlgorithm:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This is a 32bit program to perform a chain xor encryption on an array of data

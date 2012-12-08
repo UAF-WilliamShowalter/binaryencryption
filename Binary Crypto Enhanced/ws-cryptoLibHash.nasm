@@ -1,6 +1,6 @@
 section .text
-global _hashingAlgorithm
-_hashingAlgorithm:
+global hashingAlgorithm
+hashingAlgorithm:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; This is a 32bit program to perform hashing on an array of data
