@@ -11,17 +11,21 @@
 
  
     Written by William Showalter. williamshowalter@gmail.com.
-    Date Last Modified: 5 December 2012
+    Date Last Modified: 7 December 2012
     Created: November 2012
  
+    Released under Creative Commons - creativecommons.org/licenses/by-nc-sa/3.0/
+    Attribution-NonCommercial-ShareAlike 3.0 Unported (CC BY-NC-SA 3.0)
+ 
     Includes time code written by Dr. Orion Sky Lawlor. lawlor@alaska.edu
-    in "NetRunlib.h"
+    in "NetRunlib.h" Code written in NetRunlib.h remains the copyright of Dr. Orion Sky Lawlor.
  
     **NOTE**
        I am not a crytologist/cryptanalyst and have not analysed this encryption algorithm for security.
            Some implementation choices may very well lower security.
 
     ** DO NOT expect actual security if you choose to encrypt actual data using this.
+
 
 */
 
