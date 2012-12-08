@@ -112,6 +112,8 @@ void menu ()
                     
                 } catch (std::runtime_error e) {
                     std::cout << "\n\n******\n" << e.what() << "\n******\n\n";
+                } catch (...) {
+                    std::cout << "\n\n******\n" << "Exception caught - Possibly one of the specified files was too large to fit in memory." << "\n******\n\n";
                 }
                 
                 break;
@@ -146,6 +148,10 @@ void menu ()
                 
                 catch (std::runtime_error e) {
                     std::cout << "\n\n******\n" << e.what() << "\n******\n\n";
+                }
+                
+                catch (...) {
+                    std::cout << "\n\n******\n" << "Exception caught - Possibly one of the specified files was too large to fit in memory." << "\n******\n\n";
                 }
                 break;
             }
