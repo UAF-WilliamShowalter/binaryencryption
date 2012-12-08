@@ -22,7 +22,7 @@ To install on Windows, just use the crypto.exe executable. If you really want, a
 
 
 Written by William Showalter. williamshowalter@gmail.com.
-Date Last Modified: 5 December 2012
+Date Last Modified: 7 December 2012
 Created: November 2012
 
 Includes time code written by Dr. Orion Sky Lawlor, lawlor@alaska.edu, in "NetRunlib.h"
