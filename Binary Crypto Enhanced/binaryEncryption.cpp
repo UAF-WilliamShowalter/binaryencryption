@@ -256,8 +256,6 @@ int encryption (std::string datafilename, std::string keyfilename, std::string o
             {
                 finalByteCount = datafilestream.gcount();
                 data.push_back(temp);
-                // DEBUG LINE
-                std::cout << "\n\nRead In Last item in file\n\n";
             }
         }
         
@@ -270,7 +268,6 @@ int encryption (std::string datafilename, std::string keyfilename, std::string o
         encryptionAlgorithm (&data[0], &data[data.size()], &key[0], &key[key.size()], ENCRYPT);
         
         // Write out to file
-        
         for (std::vector<unsigned int>::iterator ii = data.begin(); ii != (data.end()); ii++)
         {
             // Writes decrypted data out to file. Size of last block of bytes is determined by finalByteCount
