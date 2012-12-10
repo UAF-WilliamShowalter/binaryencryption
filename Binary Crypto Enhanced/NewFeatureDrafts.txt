@@ -1,0 +1,8 @@
+Allow input files larger than 1GB:
+    Increasing vector size over 1GB prompts a reallocate and copy of size 2GB, which exceeds allocatable space and throws a bad_alloc.
+    
+    Limit key size to 1GB. Read in key before data. Put data read in/enc/write out in while loop. Open input filestream and write out file streams outside of loop. Put maximum counter of reads at approximately 1GB-4bytes worth (for hash). Perform encryption, write out to file (keeping stream open afterword), clear the vector, and start reading in again, until the end of file is found (while loop condition).
+    
+    Keep a hash for each 1GB chunk written out at the beginning. When decrypting read in each hash to it's own vector (we won't worry about that vector becoming larger than 1GB, because - well - damn, that's 1GB worth of 4 byte per 1GB chunks). Before each 1GB decrypted chunk is written back out to file, hash it, add it to a second vector of hashes. At the end, hash each vector, compare the resulting hash.
+
+Note: this implementation of 1GB max key files makes one-time-pad usage on files over 1GB impossible. But loops tracking both key .eof and data .eof make things more compilicated to do both, and needing a key of over 1GB is unrealistic.

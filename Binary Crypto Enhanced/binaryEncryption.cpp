@@ -191,46 +191,48 @@ int encryption (std::string datafilename, std::string keyfilename, std::string o
     // finalByteCount contains the number of bytes that contain data in the last 4 byte chunk
     int finalByteCount = 0;
     
-    std::fstream filestream;
+    std::fstream datafilestream;
+    std::fstream keyfilestream;
+    std::fstream outfilestream;
     
     // Read in data (unencrypted data)
-    filestream.open (datafilename.c_str(), std::ios::in | std::ios::binary);
-    if (!filestream.is_open())
+    datafilestream.open (datafilename.c_str(), std::ios::in | std::ios::binary);
+    if (!datafilestream.is_open())
         throw (std::runtime_error("Could not open data file. Check that directory path is valid."));
 
-    while (!filestream.eof())
+    while (!datafilestream.eof())
     {
         // Reads unencrypted data into vector in four byte blocks, last value may contain less than 4 bytes. Actual length recorded in finalByteCount.
         int temp = 0;
-        filestream.read((char*)&temp,4);
+        datafilestream.read((char*)&temp,4);
         
-        if (!filestream.eof())
+        if (!datafilestream.eof())
             data.push_back(temp);
         else
         {
-            finalByteCount = filestream.gcount();
+            finalByteCount = datafilestream.gcount();
             data.push_back(temp);
         }
     }
     
-    filestream.close();
+    datafilestream.close();
     
     // Read in key
-    filestream.open (keyfilename.c_str(), std::ios::in | std::ios::binary);
-    if (!filestream.is_open())
+    keyfilestream.open (keyfilename.c_str(), std::ios::in | std::ios::binary);
+    if (!keyfilestream.is_open())
         throw (std::runtime_error("Could not open key file. Check that directory path is valid."));
     
-    while (!filestream.eof())
+    while (!keyfilestream.eof())
     {
         // Reads in key. Last 4 byte chunk is not used in the key because it might contain less than 4 bytes (less entropy/predictable/limited set of data).
         // Minimum 4 byte key.
         int temp;
-        filestream.read((char*)&temp,4);
-        if (!filestream.eof())
+        keyfilestream.read((char*)&temp,4);
+        if (!keyfilestream.eof())
             key.push_back(temp);
     }
     
-    filestream.close();
+    keyfilestream.close();
     
     // Compute Hash
     unsigned int hash = hashingAlgorithm (&data[0], &data[data.size()]);
@@ -242,8 +244,8 @@ int encryption (std::string datafilename, std::string keyfilename, std::string o
     
     // Write out to file
     
-    filestream.open (outputname.c_str(), std::ios::out | std::ios::binary);
-    if (!filestream.is_open())
+    outfilestream.open (outputname.c_str(), std::ios::out | std::ios::binary);
+    if (!outfilestream.is_open())
         throw (std::runtime_error("Could not open output file. Check that directory path is valid."));
     
     for (std::vector<unsigned int>::iterator ii = data.begin(); ii != (data.end()); ii++)
@@ -255,7 +257,7 @@ int encryption (std::string datafilename, std::string keyfilename, std::string o
         
         if ((ii) != (data.end()-1))
         {
-            filestream.write((char*)&temp,4);
+            outfilestream.write((char*)&temp,4);
         }
         
         else
@@ -263,10 +265,10 @@ int encryption (std::string datafilename, std::string keyfilename, std::string o
             // Insignificant bits (not from data in the input file) our discared on write out of the last block.
             // They won't decrypt to the same values - but they won't affect the rest of the decryption. Bits are independent of each other in the same block.
             temp = ((temp<<(BIT_SHIFT_COUNT))+(temp>>(32 - BIT_SHIFT_COUNT)));
-            filestream.write((char*)&temp,finalByteCount);
+            outfilestream.write((char*)&temp,finalByteCount);
         }
     }
-    filestream.close();
+    outfilestream.close();
     
     return data.size();
 }
@@ -290,46 +292,48 @@ std::pair<int,bool> decryption (std::string datafilename, std::string keyfilenam
     // finalByteCount contains the number of bytes that contain data in the last 4 byte chunk
     int finalByteCount = 0;
     
-    std::fstream filestream;
+    std::fstream datafilestream;
+    std::fstream keyfilestream;
+    std::fstream outfilestream;
     
     // Read in data
-    filestream.open (datafilename.c_str(), std::ios::in | std::ios::binary);
-    if (!filestream.is_open())
+    datafilestream.open (datafilename.c_str(), std::ios::in | std::ios::binary);
+    if (!datafilestream.is_open())
         throw (std::runtime_error("Could not open data file. Check that directory path is valid."));
     
-    while (!filestream.eof())
+    while (!datafilestream.eof())
     {
         // Reads encrypted data into vector in four byte blocks, last value may contain less than 4 bytes. Actual length recorded in finalByteCount.
         int temp = 0;
-        filestream.read((char*)&temp,4);
+        datafilestream.read((char*)&temp,4);
         
-        if (!filestream.eof())
+        if (!datafilestream.eof())
             data.push_back(temp);
         else
         {
-            finalByteCount = filestream.gcount();
+            finalByteCount = datafilestream.gcount();
             temp = ((temp>>(BIT_SHIFT_COUNT))+(temp<<(32 - BIT_SHIFT_COUNT)));
             data.push_back(temp);
         }
     }
     
-    filestream.close();
+    datafilestream.close();
     
     // Read in key
-    filestream.open (keyfilename.c_str(), std::ios::in | std::ios::binary);
-    if (!filestream.is_open())
+    keyfilestream.open (keyfilename.c_str(), std::ios::in | std::ios::binary);
+    if (!keyfilestream.is_open())
         throw (std::runtime_error("Could not open key file. Check that directory path is valid."));
     
-    while (!filestream.eof())
+    while (!keyfilestream.eof())
     {
         // Reads in key. Last 4 byte chunk is not used in the key because it might contain less than 4 bytes (less entropy/predictable/limited set of data).
         int temp;
-        filestream.read((char*)&temp,4);
-        if (!filestream.eof())
+        keyfilestream.read((char*)&temp,4);
+        if (!keyfilestream.eof())
             key.push_back(temp);
     }
     
-    filestream.close();
+    keyfilestream.close();
     
     // Decrypt
     encryptionAlgorithm (&data[0], &data[data.size()], &key[0], &key[key.size()], DECRYPT);
@@ -346,8 +350,8 @@ std::pair<int,bool> decryption (std::string datafilename, std::string keyfilenam
     bool checksum = (hash_before == hash_after);
     
     // Write out to file
-    filestream.open (outputname.c_str(), std::ios::out | std::ios::binary);
-    if (!filestream.is_open())
+    outfilestream.open (outputname.c_str(), std::ios::out | std::ios::binary);
+    if (!outfilestream.is_open())
         throw (std::runtime_error("Could not open output file. Check that directory path is valid."));
 
     for (std::vector<unsigned int>::iterator ii = data.begin(); ii != (data.end()); ii++)
@@ -359,16 +363,16 @@ std::pair<int,bool> decryption (std::string datafilename, std::string keyfilenam
         
         if ((ii) != data.end()-1)
         {
-            filestream.write((char*)&temp,4);
+            outfilestream.write((char*)&temp,4);
         }
         
         else
         {
             // Low bits that get written out will be the same value. They git shifted back during the decryption process, so no bitshifts are required here.
-            filestream.write((char*)&temp,finalByteCount);
+            outfilestream.write((char*)&temp,finalByteCount);
         }
     }
-    filestream.close();
+    outfilestream.close();
     
     return std::pair<int,bool>(data.size(),checksum);  // Return size of data & Return true if decryption matches the hash.
 }
