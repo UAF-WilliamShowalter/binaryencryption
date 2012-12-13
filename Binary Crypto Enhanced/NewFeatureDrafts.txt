@@ -1,2 +1,0 @@
-Increase read/write performance.
-    Write out file in one chunk using the vector as an array & size paramter.
