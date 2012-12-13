@@ -61,8 +61,8 @@ int main(int argc, const char * argv[])
     menu();
     
     
+    // Example testing driver calls:
     //testDriver ("/Users/William/Desktop/input.pdf", "/Users/William/Desktop/output.pdf", "/Users/William/Desktop/key.pdf", "/Users/William/Desktop/tempOutput");
-    
     //testDriver ("/Users/William/Desktop/input.mkv", "/Users/William/Desktop/output.mkv", "/Users/William/Desktop/key.mkv", "/Users/William/Desktop/tempOutput");
     
     return 0;
@@ -320,6 +320,12 @@ unsigned int encryption (std::string datafilename, std::string keyfilename, std:
 
     datafilestream.close();
     outfilestream.close();
+
+    // Overwrite key from memory before it is unallocated.
+    for (unsigned int * iter = &(key[0]); iter != &(key[key.size()]); iter+=4)
+    {
+        *iter = 0xFFFFFFFF;
+    }
     
     return dataLength;
 }
@@ -465,6 +471,12 @@ std::pair<unsigned int,bool> decryption (std::string datafilename, std::string k
     
     datafilestream.close();
     outfilestream.close();
+    
+    // Overwrite key from memory before it is unallocated.
+    for (unsigned int * iter = &(key[0]); iter != &(key[key.size()]); iter+=4)
+    {
+        *iter = 0xFFFFFFFF;
+    }
     
     unsigned int hashBefore = hashingAlgorithm(&hashesBefore[0],&hashesBefore[hashesBefore.size()]);
     unsigned int hashAfter = hashingAlgorithm(&hashesAfter[0],&hashesAfter[hashesAfter.size()]);
