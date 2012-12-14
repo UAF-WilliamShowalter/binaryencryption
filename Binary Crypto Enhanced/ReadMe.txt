@@ -11,9 +11,11 @@ Users are prompted for their selection of encryption or decryption, and then for
 A series of assembly xor's and circular bit shifts are performed on 32bit (4byte) sections of the data to perform the encryption/decryption.
 
 Features include: Checksum stored in the encrypted data for checking integrity of decrypted data. File paths are checked and will reprompt if unaccessible.
-				  Calculates how fast data is processed being encrypted or decrypted. Read time for key creates overhead. Key is only read once and limited to effective size of 512MB.
-					This is the speed at which it took to load the data, key, run the encryption/decryption function, and write out to file the result.
-                    
+                  Calculates how fast data is processed being encrypted or decrypted. Read time for key creates overhead, key chunks are potentially the same size of data for each read.
+                  This is the speed at which it took to load the data, key, run the encryption/decryption function, and write out to file the result.
+                  
+One 4 byte checksum is inserted into encrypted data for every MAX_FILE_SIZE piece of the file. MAX_FILE_SIZE is currently 1MB.
+
 INSTALLATION NOTES:
 To install on Linux, run "make" in the linux/ directory. It will build a cryptoUtil binary file to execute.
 To install on Mac, run "make" in the macosx/ directory. It will build a cryptoUtil binary file to execute.

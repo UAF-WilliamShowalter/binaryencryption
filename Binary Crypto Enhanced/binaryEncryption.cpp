@@ -6,8 +6,10 @@
     A series of assembly xor's and circular bit shifts are performed on 32bit (4byte) sections of the data to perform the encryption/decryption.
  
     Features include: Checksum stored in the encrypted data for checking integrity of decrypted data. File paths are checked and will reprompt if unaccessible.
-                      Calculates how fast data is processed being encrypted or decrypted. Read time for key creates overhead. Key is only read once and limited to effective size of 512MB.
+                      Calculates how fast data is processed being encrypted or decrypted. Read time for key creates overhead, key chunks are potentially the same size of data for each read.
                       This is the speed at which it took to load the data, key, run the encryption/decryption function, and write out to file the result.
+ 
+    One 4 byte checksum is inserted into encrypted data for every MAX_FILE_SIZE piece of the file. MAX_FILE_SIZE is currently 1MB.
 
  
     Written by William Showalter. williamshowalter@gmail.com.
@@ -40,7 +42,7 @@
 
 // GLOBAL CONSTANTS
 const unsigned int BIT_SHIFT_COUNT = 16;              // Multiple of 8 (full byte increments)
-const unsigned int MAX_FILE_SIZE = 1024 * 1024 * 512; // Maximum vector size without getting bad_alloc on insert. 1MB
+const unsigned int MAX_FILE_SIZE = 1024 * 1024;       // 1MB. Maximum vector size, to avoid reading entire file (which could bad_alloc and has non-optimal performance).
 enum OPERATION {ENCRYPT = 0, DECRYPT = 1};
 enum BYTES {BYTES = 0, KILOBYTES = 1, MEGABYTES = 2, GIGABYTES = 3};
 
@@ -209,6 +211,7 @@ unsigned int encryption (std::string datafilename, std::string keyfilename, std:
     unsigned long long dataLength = 0;
     unsigned long long keyLength = 0;
     unsigned long long dataLeft = 0;
+    unsigned long long keyLeft = 0;
     
     // Data is broken into 4 byte chunks (ints, register size), last 4 byte chunk might contain less than 4 bytes of data.
     // finalByteCount contains the number of bytes that contain data in the last 4 byte chunk
@@ -237,30 +240,16 @@ unsigned int encryption (std::string datafilename, std::string keyfilename, std:
     if (!outfilestream.is_open())
         throw (std::runtime_error("Could not open output file. Check that directory path is valid."));
     
-    // Read in key - Maximum of MAX_FILE_SIZE.
-    
     // Find length of key file
     keyfilestream.seekg(0,std::ios::end);
     keyLength = keyfilestream.tellg();
+    keyLength = (keyLength - keyLength%4); // Mod off the extra bits.
     keyfilestream.clear();
     keyfilestream.seekg(0, std::ios::beg);
     
-    if (keyLength < MAX_FILE_SIZE)
-    {
-        keyLength = (keyLength - keyLength%4);
-        key.resize (keyLength/4);
-        keyfilestream.read((char*)&key[0],keyLength);
-    }
-    else
-    {
-        key.resize (MAX_FILE_SIZE/4);
-        keyfilestream.read((char*)&key[0],MAX_FILE_SIZE);
-    }
+    keyLeft = keyLength;
 
-    keyfilestream.close();
-
-    // Encryption Loop
-    
+    // Find length of data file
     datafilestream.seekg(0, std::ios::end);
     dataLength = datafilestream.tellg();
     datafilestream.clear();
@@ -270,6 +259,28 @@ unsigned int encryption (std::string datafilename, std::string keyfilename, std:
     
     while (!datafilestream.fail())
     {
+        
+        // Read in key - in MAX_FILE_SIZE pieces
+        
+        if (keyLeft <= MAX_FILE_SIZE)
+        {
+            key.resize (keyLeft/4);
+            keyfilestream.read((char*)&key[0],keyLeft);
+            
+            // Reset stream for next loop
+            keyfilestream.clear();
+            keyfilestream.seekg(0, std::ios::beg);
+            keyLeft = keyLength;
+        }
+        
+        else
+        {
+            key.resize (MAX_FILE_SIZE/4);
+            keyfilestream.read((char*)&key[0],MAX_FILE_SIZE);
+            keyLeft -= MAX_FILE_SIZE;
+        }
+        
+        // Read in data - in MAX_FILE_SIZE pieces
         
         if (dataLeft <= MAX_FILE_SIZE-4)
         {
@@ -314,10 +325,9 @@ unsigned int encryption (std::string datafilename, std::string keyfilename, std:
             outfilestream.write ((char*)&data[0], MAX_FILE_SIZE);
             dataLeft -= (MAX_FILE_SIZE - 4);
         }
-        
-        data.clear();
     }
 
+    keyfilestream.close();
     datafilestream.close();
     outfilestream.close();
 
@@ -349,6 +359,7 @@ std::pair<unsigned int,bool> decryption (std::string datafilename, std::string k
     unsigned long long dataLength = 0;
     unsigned long long keyLength = 0;
     unsigned long long dataLeft = 0;
+    unsigned long long keyLeft = 0;
     bool checksum;
     
     // Data is broken into 4 byte chunks (ints, register size), last 4 byte chunk might contain less than 4 bytes of data.
@@ -378,30 +389,16 @@ std::pair<unsigned int,bool> decryption (std::string datafilename, std::string k
     if (!outfilestream.is_open())
         throw (std::runtime_error("Could not open output file. Check that directory path is valid."));
     
-    // Read in key - Maximum of MAX_FILE_SIZE.
-    
     // Find length of key file
     keyfilestream.seekg(0,std::ios::end);
     keyLength = keyfilestream.tellg();
+    keyLength = (keyLength - keyLength%4); // Mod off the extra bits.
+    keyfilestream.clear();
     keyfilestream.seekg(0, std::ios::beg);
     
-    if (keyLength < MAX_FILE_SIZE)
-    {
-        keyLength = (keyLength - keyLength%4);
-        key.resize (keyLength/4);
-        keyfilestream.read((char*)&key[0],keyLength);
-    }
+    keyLeft = keyLength;
     
-    else
-    {
-        key.resize (MAX_FILE_SIZE/4);
-        keyfilestream.read((char*)&key[0],MAX_FILE_SIZE);
-    }
-    
-    keyfilestream.close();
-    
-    // Decryption Loop
-    
+    // Find length of data file
     datafilestream.seekg(0, std::ios::end);
     dataLength = datafilestream.tellg();
     datafilestream.clear();
@@ -411,7 +408,27 @@ std::pair<unsigned int,bool> decryption (std::string datafilename, std::string k
     
     while (!datafilestream.fail())
     {
-        // Reads encrypted data into vector in four byte blocks, doing MAX_FILE_SIZE at a time, last value may contain less than 4 bytes. Actual length recorded in finalByteCount.
+        
+        // Read in key - in MAX_FILE_SIZE pieces
+        
+        if (keyLeft <= MAX_FILE_SIZE)
+        {
+            key.resize (keyLeft/4);
+            keyfilestream.read((char*)&key[0],keyLeft);
+            
+            // Reset stream for next loop
+            keyfilestream.clear();
+            keyfilestream.seekg(0, std::ios::beg);
+            keyLeft = keyLength;
+        }
+        else
+        {
+            key.resize (MAX_FILE_SIZE/4);
+            keyfilestream.read((char*)&key[0],MAX_FILE_SIZE);
+            keyLeft -= MAX_FILE_SIZE;
+        }
+        
+        // Read in data - in MAX_FILE_SIZE pieces
         if (dataLeft <= MAX_FILE_SIZE)
         {
             // if mod ++ is in case division truncated dataLength
@@ -466,9 +483,17 @@ std::pair<unsigned int,bool> decryption (std::string datafilename, std::string k
             dataLeft -= (MAX_FILE_SIZE);
         }
         
-        data.clear();
+        if (datafilestream.fail())
+        {
+            // Overwrite data from memory before it is unallocated after the final loop.
+            for (unsigned int * iter = &(key[0]); iter != &(key[key.size()]); iter+=4)
+            {
+                *iter = 0xFFFFFFFF;
+            }
+        }
     }
     
+    keyfilestream.close();
     datafilestream.close();
     outfilestream.close();
     
