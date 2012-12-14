@@ -24,7 +24,7 @@ To install on Windows, just use the crypto.exe executable. If you really want, a
 
 
 Written by William Showalter. williamshowalter@gmail.com.
-Date Last Modified: 9 December 2012
+Date Last Modified: 14 December 2012
 Created: November 2012
 
 Released under Creative Commons - creativecommons.org/licenses/by-nc-sa/3.0/
