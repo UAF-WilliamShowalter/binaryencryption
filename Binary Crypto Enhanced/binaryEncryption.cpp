@@ -325,6 +325,9 @@ unsigned int encryption (std::string datafilename, std::string keyfilename, std:
             outfilestream.write ((char*)&data[0], MAX_FILE_SIZE);
             dataLeft -= (MAX_FILE_SIZE - 4);
         }
+        
+        // Doesn't clear memory/change capacity, but destructors for all items are called and size = 0. Means that pieces of data don't end up all over memory space, only one array of it.
+        data.clear();
     }
 
     keyfilestream.close();
@@ -491,8 +494,12 @@ std::pair<unsigned int,bool> decryption (std::string datafilename, std::string k
                 *iter = 0xFFFFFFFF;
             }
         }
+        
+        // Doesn't clear memory/change capacity, but destructors for all items are called and size = 0. Means that pieces of data don't end up all over memory space, only one array of it.
+        data.clear();
+        
     }
-    
+
     keyfilestream.close();
     datafilestream.close();
     outfilestream.close();
